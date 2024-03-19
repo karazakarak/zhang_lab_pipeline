@@ -104,6 +104,17 @@ FILTER_LOW_COUNT_PERC = 0.02
 FILTER_HIGH_COUNT_PERC = 0
 EPS = 0.1
 
+# results visulization
+
+The output of HiCPro is a matrix file containing interaction pairs. Using juicer tools, it can be converted into hic file and viewed with juicebox. After installation of juicer(https://github.com/aidenlab/juicer/wiki/Juicer-Tools-Quick-Start), run the following code in the terminal to commit the convertion.
+
+cd HiCPro_data_results_fat/hic_results
+
+
+find . -name "*allValidPairs" | xargs -i juicertools/hicpro2juicebox.sh -i {} -g genome_reference/mm9/mm9_noYM.sizes.txt -j pkgs/juicer_tools_1.19.02.jar
+
+
+
 
 
 
