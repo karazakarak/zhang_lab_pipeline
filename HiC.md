@@ -126,7 +126,6 @@ hicConvertFormat --matrices $sample  --outFileName $sample.cool_50k --inputForma
 hicConvertFormat --matrices $sample  --outFileName $sample.cool_100k --inputFormat hic --outputFormat cool --resolutions 100000
 
 done
-
 "
 
 After acquiring cool files, we can call compartments with cooltools(v0.4.0).  
@@ -135,7 +134,6 @@ After acquiring cool files, we can call compartments with cooltools(v0.4.0).
 for sample in *.cool; do
 cooltools eigs-cis --n-eigs 3 -o $sample.callcompartment  $sample;
 done
-
 "
 
 
