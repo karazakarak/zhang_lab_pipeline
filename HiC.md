@@ -114,8 +114,29 @@ cd HiCPro_data_results_fat/hic_results
 find . -name "*allValidPairs" | xargs -i juicertools/hicpro2juicebox.sh -i {} -g genome_reference/mm9/mm9_noYM.sizes.txt -j pkgs/juicer_tools_1.19.02.jar
 
 
+# call compartments
 
+To call compartments, cool files must firstly be converted from hic files. Using the code bellow to generate cool files with required resolutions. hicexplorer v3.7 should be installed before the process.
 
+"
+for sample in *.hic; do
+hicConvertFormat --matrices $sample  --outFileName $sample.cool_10k --inputFormat hic --outputFormat cool --resolutions 10000
+hicConvertFormat --matrices $sample  --outFileName $sample.cool_25k --inputFormat hic --outputFormat cool --resolutions 25000
+hicConvertFormat --matrices $sample  --outFileName $sample.cool_50k --inputFormat hic --outputFormat cool --resolutions 50000
+hicConvertFormat --matrices $sample  --outFileName $sample.cool_100k --inputFormat hic --outputFormat cool --resolutions 100000
+
+done
+
+"
+
+After acquiring cool files, we can call compartments with cooltools(v0.4.0).  
+
+"
+for sample in *.cool; do
+cooltools eigs-cis --n-eigs 3 -o $sample.callcompartment  $sample;
+done
+
+"
 
 
 
