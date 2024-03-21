@@ -46,8 +46,17 @@ mv sample_mm9p_bed sample_mm9p_bed_final
 bedtools intersect -v -a sample_mm9p_bed_final -b /lustre/home/fhliu/CHIP_seq/RUN_0004/mm9_blacklist.bed > sample_mm9p_bed
 mv sample_mm9p_bed sample_mm9p_bed_final
 
-# revert bed back to bam
+# generate bigwig using cpm normalization
 bedtools bedtobam -i sample_mm9p_bed_final -g /lustre/home/fhliu/HiCPro_data/genome_reference/mm9/mm9_noYM.sizes.txt > sample_mm9p_bam_final
 samtools index sample_mm9p_bam_final
 bamCoverage -bs 1 --normalizeUsing CPM -b sample_mm9p_bam_final -o sample_mm9p_cpm.bw
+# generate bigwig using scf normalization
+With the previous alignment results of spike in sequence(sample_hgp_bam_mkdup_stat1), a scaling factor can be calculated with the formula bellow: 
+scf(scaling factor) = 2000000/spike in reads
+Then run the following code to get the scf normalization bigwig.
+"samtools index sample_mm9p_bam_final
+bamCoverage -bs 1 --scaleFactor scf(the exact number generated from the formula) -b sample_mm9p_bam_final -o sample_mm9p_scf.bw
+"
+
+
 
