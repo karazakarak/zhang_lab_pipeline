@@ -3,10 +3,10 @@ library(plyr)
 library(data.table)
 library(ggplot2)
 library(scales)
-attract = func
-
-sample <- "smc2_asyn_merge"
-
+attract = function(sample_name,track_name)
+{
+sample <- sample_name
+track_file = track_name
 saddle_bin <- 40 #number of pixels for each comp
 
 saddle_all <- matrix(0, nrow= saddle_bin*4, ncol= saddle_bin*4) #4 comps together.
@@ -17,7 +17,7 @@ c_score_all <- matrix(0, nrow=20, ncol=11)
 colnames(c_score_all) <- c("chr","a1_vs_a1","a1_vs_a2","a1_vs_b1","a1_vs_c","a2_vs_a2","a2_vs_b1","a2_vs_c","b1_vs_b1","b1_vs_c","c_vs_c")
 
 #read in tracks of histone modification as well as PC1 values for each time point
-track <- read.table(file="/Users/haoyuezhang/Desktop/szbl/科研项目/smc2-aid/data_analysis/25k_call_compartments/comp_bigwigaveoverbed/his_modi_all_pc1_all_25kb_bins_with_comp_with_smc3.csv",sep=",",header=T)
+track <- read.table(file=track_file,sep=",",header=T)
 
 track <- track[-nrow(track),] #cut the last row from chrX
 
@@ -27,26 +27,24 @@ for(i in 1:20){
 	
 	print(i)
 #matrix to store saddle plot for each chromosome
-
-	if(i==10){next} #skip chr12
-#	if(i==2){next} #skip chr2
+  if(i==10){next} #skip chr10
 	if(i==12){next} #skip chr12
 	
 	saddle <- matrix(0, nrow= saddle_bin*4, ncol= saddle_bin*4)
 	
-	input_matrix <- paste("/Volumes/super_adam3/smc2_project/matrix_file/25kb/",sample,"_chr", i, ".txt", sep="")
+	input_matrix <- paste(sample,"_chr", i, ".txt", sep="")
 
 # read in 25kb o/e matrix for each chromosome and rea
 	ma <- read.table(input_matrix, sep="\t", header=F)
 	
 # read in pc1 and histone modification value for each chromosome
-	pc1_4h <- track[track$chr == paste("chr",i,sep=""), 12]
-	pc1_asy <- track[track$chr == paste("chr",i,sep=""), 39]
-	k9me3 <- track[track$chr == paste("chr",i,sep=""), 11]
-	k27me3 <- track[track$chr == paste("chr",i,sep=""), 13]
-	k36me3 <- track[track$chr == paste("chr",i,sep=""), 6]
-	k27ac <- track[track$chr == paste("chr",i,sep=""), 5]
-	comp <- track[track$chr == paste("chr",i,sep=""), 65]
+	pc1_4h <- track$lb1[track$chr == paste("chr",i,sep="")]
+	pc1_asy <- track$pc1_asy[track$chr == paste("chr",i,sep="")]
+	k9me3 <- track$k9me3[track$chr == paste("chr",i,sep="")]
+	k27me3 <- track$k27me3[track$chr == paste("chr",i,sep="")]
+	k36me3 <- track$k36me3[track$chr == paste("chr",i,sep="")]
+	k27ac <- track$k27ac[track$chr == paste("chr",i,sep="")]
+	comp <- track$comp[track$chr == paste("chr",i,sep="")]
 	
 	length <- nrow(ma)
 	ma <- ma[, -(length+1)]
@@ -90,7 +88,7 @@ for(i in 1:20){
 	
 # sort each column based on x value.
 
-	ma <- ma[,order(ma[(nrow(ma)-1),], decreasing =F)] #note, has to order based on the second to last row. because pc1 is the last row
+	ma <- ma[,order(as.numeric(ma[(nrow(ma)-1),], decreasing =F))] #note, has to order based on the second to last row. because pc1 is the last row
 
 # remove the the row with x values
 	ma <- ma[-nrow(ma),]
@@ -122,7 +120,7 @@ c_bin1_s <- a_1_l + a_2_l + b_1_l + b_2_l + 1 #note, had to add b_2_l
 c_bin1_e <- a_1_l + a_2_l + b_1_l + b_2_l + bin_perU_c #note, had to add b_2_l
 
 
-
+ma = as.data.frame(apply(ma,2,as.numeric))
 #fill in the averaged value
 
 	for(j in 1: saddle_bin){ #4 sections adding together. therefore, the matrix should be saddle_bin*4. I only need to fill in the upper triangle.
@@ -302,9 +300,9 @@ c_bin1_e <- a_1_l + a_2_l + b_1_l + b_2_l + bin_perU_c #note, had to add b_2_l
 
 saddle_all <- saddle_all/18 
 
-write.table(saddle_all, file=paste("/Users/haoyuezhang/Desktop/szbl/科研项目/smc2-aid/data_analysis/25k_call_compartments/comp_plots/interpolation/",sample,"_comp_original_order_18chr",".txt",sep=""), sep="\t", col.names=F, row.names=F, quote=F)
+write.table(saddle_all, file=paste(sample,"_comp_original_order_18chr",".txt",sep=""), sep="\t", col.names=F, row.names=F, quote=F)
 
-write.table(c_score_all, file=paste("/Users/haoyuezhang/Desktop/szbl/科研项目/smc2-aid/data_analysis/25k_call_compartments/comp_plots/interpolation/",sample,"_comp_interactions_original_order_18chr",".txt",sep=""), sep="\t", col.names=T, row.names=F, quote=F)
+write.table(c_score_all, file=paste(sample,"_comp_interactions_original_order_18chr",".txt",sep=""), sep="\t", col.names=T, row.names=F, quote=F)
 
 #generate genomewide log2 transformed saddle plot for generation
 
@@ -318,7 +316,17 @@ rownames(saddle_all_plot) <- NULL
 saddle_all_plot.melt <- melt(saddle_all_plot)
 
 ## plot matrix
-png(file=paste("/Users/haoyuezhang/Desktop/szbl/科研项目/smc2-aid/data_analysis/25k_call_compartments/comp_plots/interpolation/",sample,"_original_order_comp_18chr",".png",sep=""))
+png(file=paste(sample,"_original_order_comp_18chr",".png",sep=""))
 ggplot(saddle_all_plot.melt) + geom_tile(aes(Var1,-Var2,fill=value)) + scale_fill_gradient2(low="#006CB9", high="#B40003", mid="white", midpoint=0, limits=c(-2,2), oob=squish) + theme_minimal() + theme(axis.text=element_blank()) + coord_fixed() + xlab("") + ylab("") + theme(panel.grid.major=element_blank(), panel.grid.minor=element_blank())
 dev.off()
+}
+
+attract("smc2_auxin_4h_merge","his_modi_all_pc1_all_25kb_bins_with_comp_with_smc3_with_wapl_asyn_with_smc2_g1_with_wapl_noc_with_asyn_noc_with_hp1_with_a485_hismodi.csv")
+
+
+
+
+
+
+
 
