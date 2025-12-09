@@ -4,13 +4,17 @@ The loops are called in two resolutions, 10k and 25k, and there are mainly three
 Run the following code in linux system, make sure that gpu is available for the operation.
 for sample in *.hic; do
 
-java -jar /lustre/home/fhliu/tools/juicer_tools_1.22.01.jar hiccups -m 1024 -k KR -r 10000 -f 0.2 -p 4 -i 16 -d 10000 --ignore-sparsity $sample /lustre/home/fhliu/HiC_results/ProB/hiccups/10k/$sample.hiccups;
+java -jar juicer_tools_1.22.01.jar hiccups -m 1024 -k KR -r 10000 -f 0.2 -p 4 -i 16 -d 10000 --ignore-sparsity $sample hiccups/10k/$sample.hiccups;
 
-java -jar /lustre/home/fhliu/tools/juicer_tools_1.22.01.jar hiccups --threads 1 --ignore-sparsity  -m 1024 -k KR -r 25000 -f 0.1 -p 5 -i 15 -d 50000 $sample /lustre/home/fhliu/HiC_results/ProB/hiccups/25k/$sample.hiccups;
+java -jar juicer_tools_1.22.01.jar hiccups --threads 1 --ignore-sparsity  -m 1024 -k KR -r 25000 -f 0.1 -p 5 -i 15 -d 50000 $sample hiccups/25k/$sample.hiccups;
 
 done
-Run an overall loop detection with hiccups, codes can be found in hiccups_10k(25k)_gpu.slurm.
-2.
+
+2. Merge the first round results to get the requested list.
+
 Merge the loops of different resolution and expand to a 3X3 zone to get a requested list containing the surrounding location of the selected single loop pixels. (loop_collapse.r, loop_expand.R)
-3.
-Use the generated requested list to do another round of loop calling with region specified. (hiccups_spe10k_gpu.slurm, hiccups_spe25k_gpu.slurm)
+
+3. Loop calling with specific regions
+
+Use the generated requested list to do another round of loop calling so that all interested regions in all samples are processed even sometimes they are not sifnificant enough to be calculated by default. 
+Then merge the final results and get the center O/E value by averaging the 3X3 region.
